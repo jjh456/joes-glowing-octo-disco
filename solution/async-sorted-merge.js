@@ -40,5 +40,6 @@ module.exports = async (logSources, printer) => {
     }
   }
 
+  printer.done();
   console.log("Async sort complete.");
 };
