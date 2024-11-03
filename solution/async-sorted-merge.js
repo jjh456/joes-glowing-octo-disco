@@ -1,5 +1,5 @@
 "use strict";
-const LogItemMinHeap = require("../lib/min-heap");
+const LogItemMinHeap = require("./min-heap");
 
 // Print all entries, across all of the *async* sources, in chronological order.
 

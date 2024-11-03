@@ -1,5 +1,5 @@
 "use strict";
-const LogItemMinHeap = require("../lib/min-heap");
+const LogItemMinHeap = require("../solution/min-heap");
 
 // Print all entries, across all of the sources, in chronological order.
 module.exports = (logSources, printer) => {

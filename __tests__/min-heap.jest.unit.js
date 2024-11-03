@@ -1,4 +1,4 @@
-const LogItemMinHeap = require("../lib/min-heap.js");
+const LogItemMinHeap = require("../solution/min-heap.js");
 
 // LogItem
 // { msg: string, date: Date }
