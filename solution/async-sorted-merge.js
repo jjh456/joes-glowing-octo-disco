@@ -2,6 +2,9 @@
 const LogItemMinHeap = require("./min-heap");
 
 // Print all entries, across all of the *async* sources, in chronological order.
+// This async solution is not as performant as the sync solution.
+// It waits on each source to finish popping before moving on, and that delay is
+// the reason for the slowdown.
 
 module.exports = async (logSources, printer) => {
   // Create a map obj for the next entry for each source. The key is the source's index, 
