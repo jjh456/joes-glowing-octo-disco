@@ -1,5 +1,6 @@
 "use strict";
 const LogItemMinHeap = require("./min-heap");
+const CachedLogSource = require("./cached-log-source");
 
 // Print all entries, across all of the *async* sources, in chronological order.
 // This async solution is not as performant as the sync solution.
@@ -13,16 +14,15 @@ module.exports = async (logSources, printer) => {
   const makeMinHeapItem = (entry, sourceIndex) =>
     ({ logItem: entry, id: sourceIndex });
 
+  const cacheSources = logSources.map(source => new CachedLogSource(source));
 
   // Populate the heap with the first log item from each source.
-  for (let i = 0; i < logSources.length; i++) {
-    const logSource = logSources[i];
-    const nextEntry = await logSource.popAsync();
-
-    if (nextEntry) {
-      logMinHeap.insert(makeMinHeapItem(nextEntry, i));
+  const entries = await Promise.all(cacheSources.map(source => source.popAsync()));
+  entries.forEach((entry, i) => {
+    if (entry) {
+      logMinHeap.insert(makeMinHeapItem(entry, i));
     }
-  }
+  });
 
   while (!logMinHeap.isEmpty()) {
     // Find the earliest logItem.
@@ -32,7 +32,7 @@ module.exports = async (logSources, printer) => {
     printer.print(earliestHeapItem.logItem);
 
     // Get the next logItem from the same source.
-    const nextEntryFromSameSource = await logSources[earliestHeapItem.id].popAsync();
+    const nextEntryFromSameSource = await cacheSources[earliestHeapItem.id].popAsync();
 
     if (nextEntryFromSameSource) {
       const nextHeapItem = makeMinHeapItem(nextEntryFromSameSource, earliestHeapItem.id);
