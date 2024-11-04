@@ -1,0 +1,48 @@
+module.exports = class CachedLogSource {
+  constructor(logSource) {
+    this.cacheSize = 5;
+    this.logSource = logSource;
+    this.cache = [];
+    this.drainedSource = false;
+    this.loadingPromise = null;
+  }
+
+  async refillCache() {
+    if (this.loadingPromise) {
+      return this.loadingPromise;
+    }
+
+    this.loadingPromise = (async () => {
+      while (this.cache.length < this.cacheSize) {
+        const entry = await this.logSource.popAsync();
+        if (!entry) {
+          this.drainedSource = true;
+          break;
+        }
+        this.cache.push(entry);
+      }
+    })();
+
+    await this.loadingPromise;
+    this.loadingPromise = null;
+  }
+
+  async popAsync() {
+    if (this.loadingPromise && !this.cache.length) {
+      await this.loadingPromise;
+    }
+    if (!this.drainedSource && this.cache.length === 0) {
+      await this.refillCache();
+    }
+    if (this.cache.length === 0) {
+      return null;
+    }
+
+    const item = this.cache.shift();
+
+    // Start a refill of the cache to replace the item we just popped.
+    this.refillCache();
+
+    return item;
+  }
+}
